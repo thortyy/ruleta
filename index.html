@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="cs">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#151d18">
+  <title>Ruleta | Evropské kolo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #18211d;
+      --muted: #718078;
+      --paper: #eef1e9;
+      --white: #fffefa;
+      --line: #d9dfd7;
+      --green: #294b3d;
+      --lime: #d3f36b;
+      --red: #c8443d;
+      --black: #252a27;
+      --gold: #c2a44b;
+      --mono: "DM Mono", Consolas, monospace;
+      --sans: "Space Grotesk", "Segoe UI", sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body { min-height: 100vh; margin: 0; background: radial-gradient(ellipse at 50% 48%, #fff 0, var(--paper) 64%); color: var(--ink); font-family: var(--sans); }
+    button, input, select { font: inherit; }
+    button { cursor: pointer; }
+    header { background: #151d18; color: #fff; border-bottom: 1px solid #37453c; }
+    .nav { width: min(1040px, calc(100% - 36px)); min-height: 70px; margin: auto; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+    .brand { display: flex; align-items: center; gap: 10px; color: #fff; text-decoration: none; font-weight: 700; }
+    .brand-mark { width: 34px; height: 34px; display: grid; place-items: center; border: 2px solid var(--gold); border-radius: 50%; color: var(--lime); font-size: 20px; }
+    .brand-name { font-size: 14px; }
+    .brand-name small { display: block; margin-top: 3px; color: #a7b2ab; font: 9px var(--mono); }
+    .wallet { display: flex; align-items: center; gap: 9px; padding: 7px 11px; border: 1px solid #435047; border-radius: 7px; }
+    .wallet-label { display: block; color: #a7b2ab; font: 9px var(--mono); }
+    .wallet-value { display: block; margin-top: 2px; color: var(--lime); font: 14px var(--mono); }
+    .wallet-icon { color: var(--gold); }
+    main { width: min(920px, calc(100% - 28px)); margin: auto; }
+    .heading { display: flex; align-items: end; justify-content: space-between; gap: 14px; margin: 32px 0 17px; }
+    .eyebrow { margin: 0 0 7px; color: var(--green); font: 10px var(--mono); }
+    h1 { margin: 0; font-size: 32px; line-height: 1.1; }
+    .heading-copy { margin: 6px 0 0; color: var(--muted); font-size: 12px; }
+    .odds { padding: 7px 9px; border-radius: 5px; background: #e2e9d9; color: var(--green); font: 9px var(--mono); white-space: nowrap; }
+    .table { padding: 18px; border: 1px solid var(--line); border-radius: 9px; background: var(--white); box-shadow: 0 8px 28px #18211d0b; }
+    .table-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-bottom: 13px; border-bottom: 1px solid var(--line); }
+    .table-head h2 { margin: 0; font-size: 17px; }
+    .table-head p { margin: 4px 0 0; color: var(--muted); font-size: 11px; }
+    .wheel-wrap { display: grid; place-items: center; padding: 15px 0 11px; }
+    .roulette-board { position: relative; display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 1fr); place-items: center; width: min(100%, 310px); aspect-ratio: 1; margin: 0 auto; }
+    .roulette-wheel { position: relative; width: 100%; height: 100%; border: 10px solid var(--gold); border-radius: 50%; box-shadow: 0 0 0 3px #332915, 0 12px 26px #16201830, inset 0 0 0 3px #e8d28b; transform: rotate(0); transition: transform 5.4s cubic-bezier(.08, .82, .12, 1); will-change: transform; }
+    .roulette-wheel::before { content: ""; position: absolute; inset: 7px; border: 1px solid #e8d28b99; border-radius: 50%; pointer-events: none; }
+    .roulette-pocket { position: absolute; top: 50%; left: 50%; width: 22px; height: 26px; display: flex; justify-content: center; align-items: flex-start; padding-top: 2px; border: 1px solid #d7c38366; color: #fff; font: 9px var(--mono); transform: translate(-50%, -50%) rotate(var(--angle)) translateY(-115px); transform-origin: center; }
+    .roulette-pocket.red { background: var(--red); }
+    .roulette-pocket.black { background: var(--black); }
+    .roulette-pocket.green { background: #198653; font-weight: 700; }
+    .roulette-pocket.winner { z-index: 2; outline: 2px solid var(--lime); outline-offset: 2px; box-shadow: 0 0 12px #d3f36bcc; }
+    .roulette-center { position: absolute; top: 50%; left: 50%; width: 70px; height: 70px; display: grid; place-items: center; border: 4px solid #b39443; border-radius: 50%; background: radial-gradient(circle at 38% 32%, #4a6552, #1e2c23 70%); box-shadow: 0 0 0 4px #19241d; color: var(--lime); font: 700 14px var(--mono); transform: translate(-50%, -50%); }
+    .roulette-pointer { position: absolute; z-index: 3; top: 8px; left: 50%; width: 0; height: 0; border-right: 11px solid transparent; border-left: 11px solid transparent; border-top: 22px solid var(--lime); filter: drop-shadow(0 2px 3px #101710aa); transform: translateX(-50%); }
+    .form { display: grid; grid-template-columns: 1fr 1.3fr; gap: 10px; margin-top: 7px; }
+    .field { display: grid; gap: 6px; color: var(--muted); font: 9px var(--mono); }
+    .field input, .field select { width: 100%; height: 41px; padding: 0 11px; border: 1px solid var(--line); border-radius: 6px; background: #fff; color: var(--ink); font: 12px var(--sans); }
+    .field input:focus, .field select:focus { outline: 2px solid var(--lime); outline-offset: 1px; }
+    .full { grid-column: 1 / -1; }
+    [hidden] { display: none !important; }
+    .action { display: flex; align-items: center; gap: 12px; margin-top: 12px; }
+    .spin { min-height: 42px; padding: 0 17px; border: 0; border-radius: 6px; background: var(--lime); color: #20291d; font-size: 12px; font-weight: 700; transition: transform .16s; }
+    .spin:hover:not(:disabled) { transform: translateY(-2px); }
+    .spin:disabled { opacity: .5; cursor: wait; }
+    .feedback { color: var(--muted); font-size: 11px; }
+    .note { margin: 12px 0 24px; color: var(--muted); font-size: 10px; text-align: center; }
+    .toast { position: fixed; right: 16px; bottom: 16px; padding: 11px 14px; border-radius: 6px; background: #18211d; color: #fff; font-size: 11px; opacity: 0; pointer-events: none; transition: opacity .2s; }
+    .toast.show { opacity: 1; }
+    @media (max-width: 560px) {
+      .nav { min-height: 62px; }
+      .heading { align-items: flex-start; flex-direction: column; margin-top: 22px; }
+      h1 { font-size: 28px; }
+      .table { padding: 13px; }
+      .roulette-board { width: min(100%, 276px); }
+      .roulette-pocket { width: 20px; height: 24px; font-size: 8px; transform: translate(-50%, -50%) rotate(var(--angle)) translateY(-101px); }
+      .roulette-center { width: 62px; height: 62px; font-size: 12px; }
+      .roulette-pointer { top: 3px; }
+      .form { grid-template-columns: 1fr; }
+      .full { grid-column: auto; }
+      .action { align-items: flex-start; flex-direction: column; }
+      .spin { width: 100%; }
+    }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition-duration: .01ms !important; animation-duration: .01ms !important; } }
+  </style>
+</head>
+<body>
+  <header><div class="nav"><a class="brand" href="#roulette"><span class="brand-mark">◉</span><span class="brand-name">RULETA<small>EVROPSKÉ KOLO</small></span></a><div class="wallet" aria-live="polite"><span class="wallet-icon">◈</span><span><span class="wallet-label">ZŮSTATEK</span><strong class="wallet-value" id="balance">2 500 ž</strong></span></div></div></header>
+  <main id="roulette"><div class="heading"><div><p class="eyebrow">EVROPSKÁ RULETA · 37 ČÍSEL</p><h1>Roztoč kolo.</h1><p class="heading-copy">Vyber sázku a nech rozhodnout výsledek.</p></div><span class="odds">ČERVENÁ / ČERNÁ · 2× &nbsp; ČÍSLO · 36×</span></div>
+    <section class="table"><div class="table-head"><div><h2>Evropské kolo</h2><p>Nula je zelená. Sázky jsou pouze virtuální.</p></div><span class="eyebrow">EUROPEAN WHEEL</span></div><div class="wheel-wrap"><div class="roulette-board" id="roulette-board" aria-label="Evropské ruletové kolo"></div></div>
+      <div class="form"><label class="field">SÁZKA V ŽETONECH<input id="roulette-bet" type="number" min="1" value="100" inputmode="numeric"></label><label class="field">TYP SÁZKY<select id="roulette-type"><option value="red">Červená · 2×</option><option value="black">Černá · 2×</option><option value="green">Zelená 0 · 36×</option><option value="number">Přesné číslo · 36×</option></select></label><label class="field full" id="roulette-number-wrap" hidden>VYBER ČÍSLO 0–36<input id="roulette-number" type="number" min="0" max="36" value="7" inputmode="numeric"></label></div>
+      <div class="action"><button class="spin" id="spin-roulette">Roztočit ruletu <span aria-hidden="true">↗</span></button><span class="feedback" id="roulette-feedback" aria-live="polite">Zadej sázku a roztoč evropské kolo.</span></div></section><p class="note">Demo kasino · virtuální žetony bez vkladů a výběrů</p></main><div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script>
+    const STORAGE_KEY = "ruleta-demo-state-v1";
+    let state = loadState();
+    let toastTimer;
+    const $ = (id) => document.getElementById(id);
+    const formatChips = (amount) => `${Math.floor(amount).toLocaleString("cs-CZ")} ž`;
+    const wheelOrder = [0, 32, 15, 19, 4, 21, 2, 25, 17, 34, 6, 27, 13, 36, 11, 30, 8, 23, 10, 5, 24, 16, 33, 1, 20, 14, 31, 9, 22, 18, 29, 7, 28, 12, 35, 3, 26];
+    const redNumbers = new Set([1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36]);
+
+    function loadState() {
+      try {
+        const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
+        if (saved && Number.isSafeInteger(saved.balance) && saved.balance >= 0) return saved;
+      } catch {}
+      return { balance: 2500, games: 0, wins: 0 };
+    }
+
+    function saveState() {
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch {}
+      $("balance").textContent = formatChips(state.balance);
+    }
+
+    function showToast(message) {
+      const element = $("toast");
+      element.textContent = message;
+      element.classList.add("show");
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => element.classList.remove("show"), 2400);
+    }
+
+    function renderWheel(winningNumber = null) {
+      const board = $("roulette-board");
+      const segment = 360 / wheelOrder.length;
+      const pocketColor = (number) => number === 0 ? "green" : redNumbers.has(number) ? "red" : "black";
+      const slices = wheelOrder.map((number, index) => {
+        const color = number === 0 ? "#198653" : redNumbers.has(number) ? "#c8443d" : "#252a27";
+        return `${color} ${index * segment}deg ${(index + 1) * segment}deg`;
+      }).join(",");
+      board.innerHTML = `<div class="roulette-wheel" style="background:conic-gradient(${slices})">${wheelOrder.map((number, index) => `<span class="roulette-pocket ${pocketColor(number)} ${number === winningNumber ? "winner" : ""}" data-number="${number}" style="--angle:${index * segment}deg">${number}</span>`).join("")}<span class="roulette-center">R</span></div><span class="roulette-pointer" aria-hidden="true"></span>`;
+      return board.querySelector(".roulette-wheel");
+    }
+
+    async function spinWheel(number) {
+      const wheel = renderWheel();
+      const winningIndex = wheelOrder.indexOf(number);
+      const rotation = 360 * 5 - winningIndex * 360 / wheelOrder.length;
+      const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
+      wheel.style.transition = reducedMotion ? "none" : "";
+      wheel.style.transform = "rotate(0deg)";
+      void wheel.offsetWidth;
+      if (reducedMotion) {
+        wheel.style.transform = `rotate(${rotation}deg)`;
+      } else {
+        await new Promise((resolve) => {
+          let timer;
+          const finish = () => { clearTimeout(timer); resolve(); };
+          wheel.addEventListener("transitionend", finish, { once: true });
+          timer = setTimeout(finish, 6200);
+          wheel.style.transform = `rotate(${rotation}deg)`;
+        });
+      }
+      wheel.querySelector(`[data-number="${number}"]`).classList.add("winner");
+    }
+
+    $("roulette-type").addEventListener("change", () => {
+      const showNumber = $("roulette-type").value === "number";
+      $("roulette-number-wrap").hidden = !showNumber;
+    });
+
+    $("spin-roulette").addEventListener("click", async () => {
+      const button = $("spin-roulette");
+      const bet = Number($("roulette-bet").value);
+      const choice = $("roulette-type").value;
+      const chosenNumber = Number($("roulette-number").value);
+      if (!Number.isSafeInteger(bet) || bet < 1) return showToast("Sázka musí být celé číslo alespoň 1.");
+      if (bet > state.balance) return showToast("Na tak vysokou sázku nemáš dost žetonů.");
+      if (choice === "number" && (!Number.isInteger(chosenNumber) || chosenNumber < 0 || chosenNumber > 36)) return showToast("Vyber číslo od 0 do 36.");
+
+      button.disabled = true;
+      state.balance -= bet;
+      saveState();
+      const number = crypto.getRandomValues(new Uint32Array(1))[0] % 37;
+      const color = number === 0 ? "zelená" : redNumbers.has(number) ? "červená" : "černá";
+      const won = choice === "number" ? number === chosenNumber : choice === "green" ? number === 0 : number !== 0 && choice === (redNumbers.has(number) ? "red" : "black");
+      const payout = won ? bet * (choice === "number" || choice === "green" ? 36 : 2) : 0;
+      try {
+        await spinWheel(number);
+        state.balance += payout;
+        state.games += 1;
+        if (payout > bet) state.wins += 1;
+        saveState();
+        $("roulette-feedback").textContent = `Padlo ${number} · ${color}. ${won ? `Výhra ${formatChips(payout)}.` : `Prohráváš ${formatChips(bet)}.`}`;
+      } finally {
+        button.disabled = false;
+      }
+    });
+
+    $("balance").textContent = formatChips(state.balance);
+    renderWheel();
+  </script>
+</body></html>
